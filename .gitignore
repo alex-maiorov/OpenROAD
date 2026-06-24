@@ -69,3 +69,4 @@ projectview.bazelproject
 tmp/
 
 .playwright-mcp
+*.sif
