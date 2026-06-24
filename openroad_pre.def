@@ -4,10 +4,6 @@ From: ubuntu:24.04
 %environment
     export LANG=C.UTF-8
     export LC_ALL=C.UTF-8
-    export CUDA_HOME=/usr/local/cuda
-    export ROCM_PATH=/opt/rocm
-    export PATH=/usr/local/cuda/bin:/opt/rocm/bin:/usr/local/bin:${PATH}
-    export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:/usr/local/cuda/lib64:/opt/rocm/lib:/usr/local/lib:${LD_LIBRARY_PATH}
 
 %post
     export DEBIAN_FRONTEND=noninteractive
@@ -16,7 +12,7 @@ From: ubuntu:24.04
     export LC_ALL=C.UTF-8
 
     /opt/DependencyInstaller.sh -ci -base
-    /opt/DependencyInstaller.sh -ci -common
+    /opt/DependencyInstaller.sh -ci -common -save-deps-prefixes=/opt/openroad_deps_prefixes.txt
 
     strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so || true
     rm -rf /var/lib/apt/lists/*
