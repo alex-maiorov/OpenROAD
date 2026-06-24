@@ -22,37 +22,51 @@ Detailed guides are in `docs/agents/` subdirectory:
 
 ## ⚠️ Container-Only Build & Test Rule
 
-**All compilation and testing MUST be done inside Docker containers.** Never compile or test natively on the host.
+**All compilation and testing MUST be done inside containers.** Never compile or test natively on the host.
 
-The approved workflow uses `cached.Dockerfile` (note: NOT `Dockerfile`):
+### ✅ Preferred: Apptainer Incremental Build (`etc/BuildApptainer.sh`)
+
+**Use this flow by default** for all code changes and testing. It is faster for
+iterative development because the build directory persists on the host filesystem
+and supports true incremental compilation (only changed files recompile).
 
 ```
-docker build -f cached.Dockerfile --tag <container-tag> .
+# First time (or after dependency changes): build the pre-requisite image
+./etc/BuildApptainer.sh --force
+
+# Subsequent incremental builds (reuses existing pre image):
+./etc/BuildApptainer.sh
+
+# Build only (skip pre-image rebuild):
+./etc/BuildApptainer.sh -build
+
+# Rebuild pre-image only:
+./etc/BuildApptainer.sh -pre
+
+# Package final SIF only:
+./etc/BuildApptainer.sh -final
 ```
 
-Where `<container-tag>` is a tag for the resulting image (e.g. `openroad:exa-db-log`).
+**How it works:**
+1. **Phase 1 (`-pre`)**: Builds `openroad_pre.sif` — an Apptainer image containing
+   all build dependencies (Boost, CUDD, Eigen, spdlog, GTest, OR-Tools, Abseil, etc.).
+   The dependency versions and their CMake flags are managed centrally by
+   `etc/DependencyInstaller.sh` and saved to `/opt/openroad_deps_prefixes.txt`
+   inside the image.
+2. **Phase 2 (`-build`)**: Mounts the host source tree into the pre image and runs
+   CMake + make. The `build/` directory lives on the host, so subsequent
+   compilations are incremental.
+3. **Phase 3 (`-final`)**: Packages `build/bin/openroad` into a minimal
+   `openroad.sif` using `openroad.def` (inherits from `openroad_pre.sif`).
 
-Build logs are saved to `tmp/<log-file>.log` (e.g. `tmp/build10.log`). Use sequential numbering.
-
-### Why containers?
-- The native host lacks required dependencies (GTest, spdlog dev, Python3 dev, etc.).
-- `cached.Dockerfile` uses `--mount=type=cache` to persist the CMake build directory
-  between Docker rebuilds, making incremental builds fast.
-- The dev stage installs all deps; the builder stage compiles; the final stage
-  contains only the runtime binary.
-
-### Workflow
-1. Make code changes
-2. `docker build -f cached.Dockerfile --tag <container-tag> . 2>&1 | tee tmp/<log-file>.log`
-3. On first build the full dep install + compile takes ~30-60 min; subsequent builds
-   reuse cached layers and the persisted build directory (only changed files recompile).
-4. Run compiled code inside a container derived from the image (see testing.md).
+**Build logs**: Save to `tmp/<log-file>.log` (e.g. `tmp/apptainer_build1.log`).
+Use sequential numbering.
 
 ### Timeouts
 **Use very large (or no) timeouts for build commands.** Timeouts are only for interactive
-testing scenarios. A full build with `cached.Dockerfile` can take 30+ minutes on the
-first run and several minutes even for incremental rebuilds. Set `timeout=0` (infinite)
-or at least `timeout=1800000` (30 min) when running `docker build`.
+testing scenarios. A full build can take 30+ minutes on the first run and several
+minutes even for incremental rebuilds. Set `timeout=0` (infinite) or at least
+`timeout=1800000` (30 min) when running build commands.
 
 ## AI Agent Skills
 

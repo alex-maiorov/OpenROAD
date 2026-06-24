@@ -44,16 +44,16 @@ fi
 # ── Phase 2: build OpenROAD using the pre image ───────────────────────
 if [ "$BUILD_OR" -eq 1 ]; then
   echo "=== Building OpenROAD ==="
-  DEPS_ARGS=""
-  if [ -f "$ROOT_DIR/etc/openroad_deps_prefixes.txt" ]; then
-    DEPS_ARGS=$(cat "$ROOT_DIR/etc/openroad_deps_prefixes.txt")
-  fi
   apptainer exec \
     --bind "$ROOT_DIR:/OpenROAD" \
     openroad_pre.sif \
     bash -c "
+      DEPS_ARGS=\"\"
+      if [ -f /opt/openroad_deps_prefixes.txt ]; then
+        DEPS_ARGS=\$(cat /opt/openroad_deps_prefixes.txt)
+      fi
       cd /OpenROAD
-      cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DUSE_ADAPTIVECPP=ON $DEPS_ARGS
+      cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DUSE_ADAPTIVECPP=ON \$DEPS_ARGS
       cmake --build build -- -j \$(nproc)
     "
 fi
