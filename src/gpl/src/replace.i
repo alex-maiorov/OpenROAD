@@ -103,6 +103,8 @@ static gpl::PlaceOptions getOptions(
     checkKey(keys, "-routability_gradpass_run_interval", options.routabilityGradPassRunInterval);
     checkFlag(flags, "-routability_gradpass_use_grt", options.routabilityGradPassUseGrt);
 
+  checkFlag(flags, "-dump_all", options.dump_all);
+
   if (auto it = keys.find("-density"); it != keys.end()) {
     if (it->second == "uniform") {
       options.uniformTargetDensityMode = true;

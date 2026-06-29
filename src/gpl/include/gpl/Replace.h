@@ -65,6 +65,7 @@ struct PlaceOptions
   int nesterovPlaceMaxIter = 5000;
   bool routabilityUseRudy = true;
   bool disableRevertIfDiverge = false;
+  bool dump_all = false;
   int divergeConsecutiveThreshold = 1;
   bool disablePinDensityAdjust = false;
   bool enable_routing_congestion = false;

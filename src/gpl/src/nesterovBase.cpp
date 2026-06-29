@@ -1134,6 +1134,7 @@ NesterovPlaceVars::NesterovPlaceVars(const PlaceOptions& options)
       routability_driven_mode(options.routabilityDrivenMode),
       disableRevertIfDiverge(options.disableRevertIfDiverge),
       divergeConsecutiveThreshold(options.divergeConsecutiveThreshold),
+      dump_all(options.dump_all),
       timingGradPassStaRunInterval(options.timingGradPassStaRunInterval),
       timingGradPassFirstIter(options.timingGradPassFirstIter),
       routabilityGradPassFirstIter(options.routabilityGradPassFirstIter),
@@ -5338,14 +5339,14 @@ void gpl::NesterovBase::queryTimingViolations(NesterovBaseCommon& nbc, int iter)
                                          slacks_iter.begin());
 
   log_->logToDbBulk<"PathId,CellId,Iter,PathSeq,Slack">(utl::GPL,
-                                                        804,
-                                                        "gpl_path_cells",
-                                                        nodes_path_id.size(),
-                                                        nodes_path_id.begin(),
-                                                        nodes_cell_id.begin(),
-                                                        nodes_iter.begin(),
-                                                        nodes_path_seq.begin(),
-                                                        nodes_slack.begin());
+                                                         804,
+                                                         "gpl_path_cells",
+                                                         nodes_path_id.size(),
+                                                         nodes_path_id.begin(),
+                                                         nodes_cell_id.begin(),
+                                                         nodes_iter.begin(),
+                                                         nodes_path_seq.begin(),
+                                                         nodes_slack.begin());
 }
 
 // Helper to compute the timing slack weight.
@@ -6209,7 +6210,10 @@ void gpl::NesterovBase::dumpGradientsToDb(int iter)
   //  netlist (e.g. to verify GPL netlist stability over time, especially after
   //  the resizer is called). Re-comment before any production use.
   //
-  if (!has_logged_netlist_) {
+  // When dump_all mode is enabled (via -dump_all global_placement flag),
+  // the netlist is dumped on every iteration for debugging purposes.
+  const bool force_dump_netlist = npVars_ && npVars_->dump_all;
+  if (!has_logged_netlist_ || force_dump_netlist) {
     dumpNetlistToDb(iter);
     has_logged_netlist_ = true;
   }

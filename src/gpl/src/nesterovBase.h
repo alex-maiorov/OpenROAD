@@ -827,6 +827,7 @@ struct NesterovPlaceVars
   const bool disableRevertIfDiverge;
   const int divergeConsecutiveThreshold;
   bool debug = false;
+  bool dump_all = false;
   int timingGradPassStaRunInterval;
   int timingGradPassFirstIter;
   int routabilityGradPassFirstIter;

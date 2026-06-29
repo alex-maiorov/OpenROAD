@@ -57,7 +57,8 @@ sta::define_cmd_args "global_placement" {\
       [-routability_gradpass_range routability_gradpass_range]\
       [-routability_gradpass_first_iter routability_gradpass_first_iter]\
       [-routability_gradpass_run_interval routability_gradpass_run_interval]\
-      [-routability_gradpass_use_grt]
+      [-routability_gradpass_use_grt]\
+      [-dump_all]
 }
 
 proc global_placement { args } {
@@ -99,7 +100,7 @@ proc global_placement { args } {
         -routability_gradpass_range \
         -routability_gradpass_first_iter \
         -routability_gradpass_run_interval} \
-     flags {-skip_initial_place \
+      flags {-skip_initial_place \
 
       -force_center_initial_place \
       -skip_nesterov_place \
@@ -111,7 +112,8 @@ proc global_placement { args } {
       -disable_revert_if_diverge \
       -disable_pin_density_adjust \
        -enable_routing_congestion \
-       -routability_gradpass_use_grt}
+       -routability_gradpass_use_grt \
+       -dump_all}
 
   sta::check_argc_eq0 "global_placement" $args
 
